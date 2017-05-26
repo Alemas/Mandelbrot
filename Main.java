@@ -1,6 +1,8 @@
 package mandelbrot;
 
-
+import java.util.ArrayList;
+import java.util.concurrent.*;
+import java.util.concurrent.Executors.*;
 
 /**
  * Main class in the Mandelbrot project.  This will eventually, begin threads to
@@ -31,6 +33,10 @@ public class Main {
         double yCenter = -0.665;
         // Number of total iterations
         int maxIterations = 1000;
+        
+        ExecutorService es = Executors.newFixedThreadPool(numThreads);
+        
+        ArrayList<MandelbrotRenderer> runnables = new ArrayList<MandelbrotRenderer>();
 
         ColorScheme color = new ColorScheme(maxIterations);
 
@@ -48,22 +54,40 @@ public class Main {
                 resolution += 1000;
             }
             // Create a new thread with the appropriate array as the parameter.
-            threads[a] = new Thread(new MandelbrotRenderer(mbrots, color,
-                    maxIterations));
+            
+            runnables.add(new MandelbrotRenderer(mbrots, color, maxIterations));
+            
+//            threads[a] = new Thread(new MandelbrotRenderer(mbrots, color,
+//                    maxIterations));
         }
 
-        // Start the threads
-        for (Thread t : threads) {
-            t.start();
+        for (MandelbrotRenderer r : runnables) {
+        	es.execute(r);
+        	System.out.println("kauabanga");
         }
+        
+        es.shutdown();
+        
+        try {
+        	es.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+        	System.out.println("kauabanga uê");
+        }
+        
+        System.out.println("kauabanga final");
+        
+        // Start the threads
+//        for (Thread t : threads) {
+//            t.start();
+//        }
 
         // Join the threads
-        for (Thread t : threads) {
-            try {
-                t.join();
-            }
-            catch (Exception e) {}
-        }
+//        for (Thread t : threads) {
+//            try {
+//                t.join();
+//            }
+//            catch (Exception e) {}
+//        }
     }
 
 }
